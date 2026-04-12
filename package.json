@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "seed": "node databases/seed.js",
+    "setup": "node databases/setup.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -19,8 +23,16 @@
   },
   "homepage": "https://github.com/DuncanMcGehee/Tournament-Organizer#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
     "sequelize": "^6.37.8",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
   }
 }

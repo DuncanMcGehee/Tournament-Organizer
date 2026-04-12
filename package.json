@@ -1,0 +1,26 @@
+{
+  "name": "tournament-organizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DuncanMcGehee/Tournament-Organizer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DuncanMcGehee/Tournament-Organizer/issues"
+  },
+  "homepage": "https://github.com/DuncanMcGehee/Tournament-Organizer#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1"
+  }
+}

@@ -63,7 +63,7 @@ if (process.env.NODE_ENV !== 'test') {
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
-        message: 'Welcome to Task Management API',
+        message: 'Welcome to Tournament Management API',
         version: '1.0.0',
         endpoints: {
             register: 'POST /api/register',
@@ -72,10 +72,9 @@ app.get('/', (req, res) => {
             team: 'GET /api/teams/:id',
             players: 'GET /api/players',
             player: 'GET /api/players/:id',
-            createGame : 'POST /api/games',
             createTeam: 'POST /api/teams',
             updateTeam: 'PUT /api/teams/:id',
-            deleteGame: 'DELETE /api/games/:id',
+            deletePlayer: 'DELETE /api/player/:id',
             deleteTeam: 'DELETE /api/teams/:id'
         }
     });
@@ -329,16 +328,29 @@ app.put('/api/teams/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// DELETE /api/games/:id - Delete game
-app.delete('/api/games/:id', authenticateToken, async (req, res) => {
+// DELETE /api/player/:id - Delete player
+app.delete('/api/player/:id', authenticateToken, async (req, res) => {
     try {
-        // Game model not implemented yet
-        return res.status(501).json({
-            error: 'Game deletion not implemented'
+        // Find player
+        const player = await Player.findOne({
+            where: {
+                id: req.params.id
+            }
+        });
+
+        if (!player) {
+            return res.status(404).json({ error: 'Player not found' });
+        }
+
+        // Delete player
+        await player.destroy();
+
+        res.json({
+            message: 'Player deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting game:', error);
-        res.status(500).json({ error: 'Failed to delete game' });
+        console.error('Error deleting player:', error);
+        res.status(500).json({ error: 'Failed to delete player' });
     }
 });
 

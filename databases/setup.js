@@ -63,6 +63,11 @@ const Player = db.define('Player', {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
+    role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'user'
+    },
     teamId: {
         type: DataTypes.INTEGER,
         allowNull: false

@@ -25,6 +25,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+const requireRole = (roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Forbidden: insufficient permissions' });
+        }
+        next();
+    };
+};
+
 app.use(express.json());
 
 // Add CORS middleware after your other implemented middleware
@@ -189,7 +198,8 @@ app.post('/api/login', async (req, res) => {
             {
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
@@ -201,7 +211,8 @@ app.post('/api/login', async (req, res) => {
             user: {
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 
@@ -366,7 +377,7 @@ app.put('/api/teams/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/player/:id - Delete player
-app.delete('/api/player/:id', authenticateToken, async (req, res) => {
+app.delete('/api/player/:id', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
         // Find player
         const player = await Player.findOne({
@@ -392,7 +403,7 @@ app.delete('/api/player/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/teams/:id - Delete team
-app.delete('/api/teams/:id', authenticateToken, async (req, res) => {
+app.delete('/api/teams/:id', authenticateToken, requireRole('admin'), async (req, res) => {
     // Check for ownership of a team before allowing deletion
     const team = await Team.findOne({
     where: {

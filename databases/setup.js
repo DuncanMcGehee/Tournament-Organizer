@@ -30,10 +30,6 @@ const Team = db.define('Team', {
     },
     nextGame: {
         type: DataTypes.DATE
-    },
-    teamId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
     }
 });
 
@@ -101,8 +97,7 @@ Team.hasMany(Player, { foreignKey: 'teamId' });
 Player.belongsTo(Team, { foreignKey: 'teamId' });
 
 // Export for use in other files
-module.exports = { db, Team, Player, User };
-module.exports = { Sequelize };
+module.exports = { db, Team, Player, User, Sequelize };
 
 // Create database and tables
 async function setupDatabase() {
@@ -110,7 +105,7 @@ async function setupDatabase() {
         await db.authenticate();
         console.log('Connection to database established successfully.');
         
-        await db.sync({ force: true });
+        await db.sync();
         console.log('Database and tables created successfully.');
         
         await db.close();

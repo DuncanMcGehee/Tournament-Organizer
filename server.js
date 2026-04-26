@@ -204,11 +204,12 @@ app.get('/api/teams', authenticateToken, async (req, res) => {
 });
 
 // GET /api/teams/:id - Get single team
-app.get('/api/teams/:id', authenticateToken, async (req, res) => {
+app.get('/api/teams/:teamId', authenticateToken, async (req, res) => {
     try {
         const team = await Team.findOne({
             where: {
-                teamId: req.params.teamId
+                teamId: req.params.teamId,
+                userId: req.user.id
             }
         });
         
@@ -227,14 +228,14 @@ app.get('/api/teams/:id', authenticateToken, async (req, res) => {
 // GET /api/players - Get all players for authenticated user
 app.get('/api/players', authenticateToken, async (req, res) => {
     try {
-        const players = await Player.findAll({
+        const player = await Player.findAll({
             order: [['id', 'DESC']]
         });
 
         res.json({
-            message: 'Players retrieved successfully',
-            players: players,
-            total: players.length
+            message: 'Player retrieved successfully',
+            player: player,
+            total: player.length
         });
     } catch (error) {
         console.error('Error fetching players:', error);

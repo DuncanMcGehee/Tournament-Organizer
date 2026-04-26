@@ -23,6 +23,11 @@ const cors = require('cors');
 app.use(cors());
 
 // JWT Authentication middleware
+if (!process.env.JWT_SECRET) {
+    console.error("FATAL ERROR: JWT_SECRET is not defined");
+    process.exit(1);
+}
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN

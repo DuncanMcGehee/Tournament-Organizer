@@ -2,10 +2,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+
 const Joi = require('joi');
 const teamSchema = Joi.object({
     name: Joi.string().min(1).required(),
-    city: Joi.string().min(1).required()
+    record: Joi.string().allow('', null),
+    manager: Joi.string().allow('', null),
+    nextGame: Joi.date().optional()
 });
 
 // Conditionally import database models based on environment
@@ -36,16 +39,27 @@ if (!process.env.JWT_SECRET) {
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
+    if (!authHeader) {
+        return res.status(401).json({ error: 'No authorization header' });
     }
+
+    console.log("AUTH HEADER:", authHeader);
+
+    const parts = authHeader.split(' ');
+
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return res.status(401).json({ error: 'Malformed Bearer token' });
+    }
+
+    const token = parts[1];
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
+            console.log("JWT ERROR:", err.message);
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
+
         req.user = user;
         next();
     });
@@ -98,7 +112,7 @@ app.get('/', (req, res) => {
 // POST /api/register - Register new user
 app.post('/api/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Validate input
         if (!name || !email || !password) {
@@ -106,6 +120,7 @@ app.post('/api/register', async (req, res) => {
                 error: 'Name, email, and password are required'
             });
         }
+
 
         // Check if user exists
         const existingUser = await User.findOne({ where: { email } });
@@ -122,7 +137,8 @@ app.post('/api/register', async (req, res) => {
         const newUser = await User.create({
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: role || 'user'
         });
 
         res.status(201).json({
@@ -218,21 +234,20 @@ app.get('/api/teams', authenticateToken, async (req, res) => {
 
 // GET /api/teams/:id - Get single team
 app.get('/api/teams/:teamId', authenticateToken, async (req, res) => {
-    // Check for ownership of a team before allowing access
     try {
         const team = await Team.findOne({
             where: {
-                teamId: req.params.teamId,
-                userId: req.user.id
+                id: req.params.teamId,      // correct field
+                userId: req.user.id         // ownership
             }
         });
-        
+
         if (!team) {
             return res.status(404).json({ error: 'Team not found' });
         }
-        
+
         res.json(team);
-        
+
     } catch (error) {
         console.error('Error fetching team:', error);
         res.status(500).json({ error: 'Failed to fetch team' });
@@ -285,26 +300,16 @@ app.post('/api/teams', authenticateToken, async (req, res) => {
     try {
         const { name, record, manager, nextGame } = req.body;
 
-        // Validate input
-        if (!name) {
-            return res.status(400).json({
-                error: 'Name is required'
-            });
-        }
-
         // Create team
         const newTeam = await Team.create({
             name,
             record,
             manager,
             nextGame,
-            teamId: req.user.id
+            userId: req.user.id
         });
         
-        res.status(201).json({
-            message: 'Team created successfully',
-            team: newTeam
-        });
+        res.status(201).json(newTeam);
         
     } catch (error) {
         console.error('Error creating team:', error);

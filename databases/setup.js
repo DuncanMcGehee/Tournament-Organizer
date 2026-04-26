@@ -1,4 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const {Sequelize} = require('./db');
 require('dotenv').config();
 
 // Create Sequelize instance
@@ -100,6 +101,7 @@ Player.belongsTo(Team, { foreignKey: 'teamId' });
 
 // Export for use in other files
 module.exports = { db, Team, Player, User };
+module.exports = { Sequelize };
 
 // Create database and tables
 async function setupDatabase() {

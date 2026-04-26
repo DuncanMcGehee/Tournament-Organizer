@@ -2,6 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const Joi = require('joi');
+const teamSchema = Joi.object({
+    name: Joi.string().min(1).required(),
+    city: Joi.string().min(1).required()
+});
+
 // Conditionally import database models based on environment
 let db, User, Team, Player;
 if (process.env.NODE_ENV === 'test') {
@@ -271,6 +277,10 @@ app.get('/api/players/:id', authenticateToken, async (req, res) => {
 
 // POST /api/teams - Create new team
 app.post('/api/teams', authenticateToken, async (req, res) => {
+    const { error } = teamSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
     try {
         const { name, record, manager, nextGame } = req.body;
 
@@ -303,6 +313,10 @@ app.post('/api/teams', authenticateToken, async (req, res) => {
 
 // PUT /api/teams/:id - Update team
 app.put('/api/teams/:id', authenticateToken, async (req, res) => {
+    const { error } = teamSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
     try {
         const { name, record, manager, nextGame } = req.body;
 

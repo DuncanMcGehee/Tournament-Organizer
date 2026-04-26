@@ -51,8 +51,10 @@ async function testConnection() {
         await db.authenticate();
         console.log('Connection to database established successfully.');
         
-        await db.sync();
-        console.log('Database tables synced successfully.');
+        if (process.env.NODE_ENV !== 'production') {
+            await db.sync();
+            console.log('Database tables synced successfully.');
+        }
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }

@@ -1,11 +1,12 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const {Sequelize} = require('./db');
 require('dotenv').config();
 
 // Create Sequelize instance
 const db = new Sequelize({
   dialect: 'sqlite',
-  storage: `database/${process.env.DB_NAME}` || 'database/tournament_teams.db',
+  storage: process.env.DB_NAME
+    ? `database/${process.env.DB_NAME}`
+    : 'database/tournament_teams.db',
   logging: console.log
 });
 

@@ -218,6 +218,7 @@ app.get('/api/teams', authenticateToken, async (req, res) => {
 
 // GET /api/teams/:id - Get single team
 app.get('/api/teams/:teamId', authenticateToken, async (req, res) => {
+    // Check for ownership of a team before allowing access
     try {
         const team = await Team.findOne({
             where: {
@@ -313,6 +314,15 @@ app.post('/api/teams', authenticateToken, async (req, res) => {
 
 // PUT /api/teams/:id - Update team
 app.put('/api/teams/:id', authenticateToken, async (req, res) => {
+    // Check for ownership of a team before allowing update
+    const team = await Team.findOne({
+        where: {
+            teamId: req.params.teamId,
+            userId: req.user.id
+        }
+    });
+
+
     const { error } = teamSchema.validate(req.body);
     if (error) {
         return res.status(400).json({ error: error.details[0].message });
@@ -378,6 +388,13 @@ app.delete('/api/player/:id', authenticateToken, async (req, res) => {
 
 // DELETE /api/teams/:id - Delete team
 app.delete('/api/teams/:id', authenticateToken, async (req, res) => {
+    // Check for ownership of a team before allowing deletion
+    const team = await Team.findOne({
+    where: {
+        teamId: req.params.teamId,
+        userId: req.user.id
+    }
+});
     try {
         // Find team
         const team = await Team.findOne({

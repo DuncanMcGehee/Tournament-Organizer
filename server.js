@@ -330,46 +330,39 @@ app.post('/api/teams', authenticateToken, async (req, res) => {
 
 // PUT /api/teams/:id - Update team
 app.put('/api/teams/:id', authenticateToken, async (req, res) => {
-    // Check for ownership of a team before allowing update
-    const team = await Team.findOne({
-        where: {
-            teamId: req.params.teamId,
-            userId: req.user.id
-        }
-    });
-
-
-    const { error } = teamSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({ error: error.details[0].message });
-    }
     try {
-        const { name, record, manager, nextGame } = req.body;
-
-        // Find team
         const team = await Team.findOne({
-            where: {
-                id: req.params.id
-            }
+            where: { id: req.params.id }
         });
 
         if (!team) {
             return res.status(404).json({ error: 'Team not found' });
         }
 
-        // Update team
+        // AUTHORIZATION CHECK (ADMIN OR OWNER)
+        if (req.user.role !== 'admin' && team.userId !== req.user.id) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const { error } = teamSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
+
+        const { name, record, manager, nextGame } = req.body;
+
         await team.update({
             name: name || team.name,
-            record: record !== undefined ? record : team.record,
+            record: record ?? team.record,
             manager: manager || team.manager,
             nextGame: nextGame || team.nextGame
         });
-        
+
         res.json({
             message: 'Team updated successfully',
-            team: team
+            team
         });
-        
+
     } catch (error) {
         console.error('Error updating team:', error);
         res.status(500).json({ error: 'Failed to update team' });
@@ -403,32 +396,24 @@ app.delete('/api/player/:id', authenticateToken, requireRole('admin'), async (re
 });
 
 // DELETE /api/teams/:id - Delete team
-app.delete('/api/teams/:id', authenticateToken, requireRole('admin'), async (req, res) => {
-    // Check for ownership of a team before allowing deletion
-    const team = await Team.findOne({
-    where: {
-        teamId: req.params.teamId,
-        userId: req.user.id
-    }
-});
+app.delete('/api/teams/:id', authenticateToken, async (req, res) => {
     try {
-        // Find team
         const team = await Team.findOne({
-            where: {
-                id: req.params.id
-            }
+            where: { id: req.params.id }
         });
 
         if (!team) {
             return res.status(404).json({ error: 'Team not found' });
         }
 
-        // Delete team
+        // AUTH CHECK
+        if (req.user.role !== 'admin' && team.userId !== req.user.id) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
         await team.destroy();
 
-        res.json({
-            message: 'Team deleted successfully'
-        });
+        res.json({ message: 'Team deleted successfully' });
 
     } catch (error) {
         console.error('Error deleting team:', error);

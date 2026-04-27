@@ -11,6 +11,9 @@ const teamSchema = Joi.object({
     nextGame: Joi.date().optional()
 });
 
+require('dotenv').config();
+
+
 // Conditionally import database models based on environment
 let db, User, Team, Player;
 if (process.env.NODE_ENV === 'test') {
@@ -18,8 +21,6 @@ if (process.env.NODE_ENV === 'test') {
 } else {
   ({ db, User, Team, Player } = require('./databases/setup'));
 }
-
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
